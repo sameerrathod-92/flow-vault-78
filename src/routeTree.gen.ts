@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
 import { Route as AuthenticatedSettlementsRouteImport } from './routes/_authenticated/settlements'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMerchantsRouteImport } from './routes/_authenticated/merchants'
 import { Route as AuthenticatedFraudRouteImport } from './routes/_authenticated/fraud'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -44,6 +45,12 @@ const AuthenticatedSettlementsRoute =
   AuthenticatedSettlementsRouteImport.update({
     id: '/settlements',
     path: '/settlements',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMerchantsRoute = AuthenticatedMerchantsRouteImport.update({
@@ -80,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/fraud': typeof AuthenticatedFraudRoute
   '/merchants': typeof AuthenticatedMerchantsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/settlements': typeof AuthenticatedSettlementsRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
 }
@@ -91,6 +99,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/fraud': typeof AuthenticatedFraudRoute
   '/merchants': typeof AuthenticatedMerchantsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/settlements': typeof AuthenticatedSettlementsRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
 }
@@ -104,6 +113,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/fraud': typeof AuthenticatedFraudRoute
   '/_authenticated/merchants': typeof AuthenticatedMerchantsRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/settlements': typeof AuthenticatedSettlementsRoute
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
 }
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/fraud'
     | '/merchants'
+    | '/notifications'
     | '/settlements'
     | '/transactions'
   fileRoutesByTo: FileRoutesByTo
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/fraud'
     | '/merchants'
+    | '/notifications'
     | '/settlements'
     | '/transactions'
   id:
@@ -140,6 +152,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/fraud'
     | '/_authenticated/merchants'
+    | '/_authenticated/notifications'
     | '/_authenticated/settlements'
     | '/_authenticated/transactions'
   fileRoutesById: FileRoutesById
@@ -187,6 +200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettlementsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/merchants': {
       id: '/_authenticated/merchants'
       path: '/merchants'
@@ -231,6 +251,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFraudRoute: typeof AuthenticatedFraudRoute
   AuthenticatedMerchantsRoute: typeof AuthenticatedMerchantsRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedSettlementsRoute: typeof AuthenticatedSettlementsRoute
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
 }
@@ -241,6 +262,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFraudRoute: AuthenticatedFraudRoute,
   AuthenticatedMerchantsRoute: AuthenticatedMerchantsRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedSettlementsRoute: AuthenticatedSettlementsRoute,
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
 }
