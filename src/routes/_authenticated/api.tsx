@@ -47,7 +47,7 @@ function ApiPage() {
   const seedDemo = async () => {
     setSeeding(true);
     try {
-      let merchantKey = merchants[0]?.api_key;
+      let merchantKey: string | undefined = merchants[0]?.api_key;
       if (!merchantKey) {
         const seed = [
           { merchant_code: "REST001", name: "Royal Spice", city: "Delhi" },
