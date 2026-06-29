@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function SettingsPage() {
-  const { user, roles } = useAuth();
+  const { user, role } = useAuth();
   const [profile, setProfile] = useState<any>({ full_name: "", email: "" });
   const [bank, setBank] = useState({
     name: "Nexus Bank", swift: "NEXUSINBB", ifsc: "NEXB0000001", license: "RBI/DBR/2026/91",
@@ -103,7 +103,7 @@ function SettingsPage() {
 
         <TabsContent value="roles">
           <Panel title="Roles & Permissions">
-            <div className="mb-3 text-xs text-muted-foreground">Current role: <span className="rounded-md bg-secondary px-2 py-0.5 font-mono">{roles?.join(", ") || "viewer"}</span></div>
+            <div className="mb-3 text-xs text-muted-foreground">Current role: <span className="rounded-md bg-secondary px-2 py-0.5 font-mono">{role ?? "viewer"}</span></div>
             <div className="grid gap-3">
               {[
                 { name: "Admin", desc: "Full access to bank operations, merchants, settlements, and security policies." },
