@@ -34,7 +34,10 @@ function SettlementsPage() {
       by.set(t.merchant_id!, (by.get(t.merchant_id!) ?? 0) + Number(t.amount));
     });
     const settledMap = new Map<string, number>();
-    settlements.forEach((s) => settledMap.set(s.merchant_id, (settledMap.get(s.merchant_id) ?? 0) + Number(s.amount)));
+    (settlements as any[]).forEach((s) => {
+      if (!s.merchant_id) return;
+      settledMap.set(s.merchant_id, (settledMap.get(s.merchant_id) ?? 0) + Number(s.amount));
+    });
     const rows = Array.from(by.entries())
       .map(([merchant_id, total]) => ({ merchant_id, due: total - (settledMap.get(merchant_id) ?? 0) }))
       .filter((r) => r.due > 100)

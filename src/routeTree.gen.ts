@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
+import { Route as AuthenticatedSettlementsRouteImport } from './routes/_authenticated/settlements'
 import { Route as AuthenticatedMerchantsRouteImport } from './routes/_authenticated/merchants'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
@@ -36,6 +37,12 @@ const AuthenticatedTransactionsRoute =
   AuthenticatedTransactionsRouteImport.update({
     id: '/transactions',
     path: '/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSettlementsRoute =
+  AuthenticatedSettlementsRouteImport.update({
+    id: '/settlements',
+    path: '/settlements',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMerchantsRoute = AuthenticatedMerchantsRouteImport.update({
@@ -66,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/merchants': typeof AuthenticatedMerchantsRoute
+  '/settlements': typeof AuthenticatedSettlementsRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
 }
 export interface FileRoutesByTo {
@@ -75,6 +83,7 @@ export interface FileRoutesByTo {
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/merchants': typeof AuthenticatedMerchantsRoute
+  '/settlements': typeof AuthenticatedSettlementsRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
 }
 export interface FileRoutesById {
@@ -86,6 +95,7 @@ export interface FileRoutesById {
   '/_authenticated/customers': typeof AuthenticatedCustomersRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/merchants': typeof AuthenticatedMerchantsRoute
+  '/_authenticated/settlements': typeof AuthenticatedSettlementsRoute
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
 }
 export interface FileRouteTypes {
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/customers'
     | '/dashboard'
     | '/merchants'
+    | '/settlements'
     | '/transactions'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/customers'
     | '/dashboard'
     | '/merchants'
+    | '/settlements'
     | '/transactions'
   id:
     | '__root__'
@@ -116,6 +128,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers'
     | '/_authenticated/dashboard'
     | '/_authenticated/merchants'
+    | '/_authenticated/settlements'
     | '/_authenticated/transactions'
   fileRoutesById: FileRoutesById
 }
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settlements': {
+      id: '/_authenticated/settlements'
+      path: '/settlements'
+      fullPath: '/settlements'
+      preLoaderRoute: typeof AuthenticatedSettlementsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/merchants': {
       id: '/_authenticated/merchants'
       path: '/merchants'
@@ -191,6 +211,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedMerchantsRoute: typeof AuthenticatedMerchantsRoute
+  AuthenticatedSettlementsRoute: typeof AuthenticatedSettlementsRoute
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
 }
 
@@ -199,6 +220,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedMerchantsRoute: AuthenticatedMerchantsRoute,
+  AuthenticatedSettlementsRoute: AuthenticatedSettlementsRoute,
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
 }
 
