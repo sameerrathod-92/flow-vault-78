@@ -1,0 +1,4 @@
+project_id = "fuxztgktoiykjlxhqbot"
+
+[functions.transactions-ingest]
+verify_jwt = false
