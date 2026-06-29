@@ -84,10 +84,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Enterprise digital banking portal with realtime transaction monitoring, merchant management, settlements and fraud detection." },
       { name: "author", content: "Nexus Bank" },
       { property: "og:title", content: "Nexus Bank — Digital Banking Dashboard" },
-      { property: "og:description", content: "Enterprise digital banking portal with realtime monitoring." },
+      { property: "og:description", content: "Enterprise digital banking portal with realtime transaction monitoring, merchant management, settlements and fraud detection." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Nexus Bank — Digital Banking Dashboard" },
+      { name: "twitter:description", content: "Enterprise digital banking portal with realtime transaction monitoring, merchant management, settlements and fraud detection." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4c7cc8a5-9796-4c21-a68f-1feefe433658/id-preview-261b2326--99e16cc1-917d-46e9-8a33-0f6b516306cd.lovable.app-1782735059791.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4c7cc8a5-9796-4c21-a68f-1feefe433658/id-preview-261b2326--99e16cc1-917d-46e9-8a33-0f6b516306cd.lovable.app-1782735059791.png" },
     ],
     links: [
       {
