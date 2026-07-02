@@ -27,7 +27,14 @@ function ApiPage() {
   const { data: logs = [] } = useTransactions();
 
 const { data: apiKeys = [] } = useApiCredentials();
-  const [selected, setSelected] = useState(logs[0]);
+const [selected, setSelected] = useState<any>(null);
+  import { useEffect } from "react";
+
+useEffect(() => {
+  if (logs.length > 0 && !selected) {
+    setSelected(logs[0]);
+  }
+}, [logs]);
   return (
     <div className="space-y-3">
       <PageHeader eyebrow="Developer" title="API & Webhooks" subtitle="Live REST documentation, request stream, and credential vault." />
