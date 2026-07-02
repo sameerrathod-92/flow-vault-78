@@ -257,3 +257,16 @@
   0% { background-color: color-mix(in oklab, var(--color-primary) 18%, transparent); }
   100% { background-color: transparent; }
 }
+
+/* Back-compat neutral shims so untouched pages (dashboard) still render. */
+:root, .dark {
+  --gradient-primary: var(--color-primary);
+  --gradient-aurora: none;
+  --shadow-elegant: 0 1px 0 0 var(--color-border);
+  --shadow-glow: none;
+}
+@utility glass { background: var(--color-panel); border: 1px solid var(--color-border); }
+@utility glass-strong { background: var(--color-panel); border: 1px solid var(--color-border); }
+@utility shadow-elegant { box-shadow: var(--shadow-elegant); }
+@utility shadow-glow { box-shadow: none; }
+@utility gradient-text { color: var(--color-foreground); }
