@@ -22,6 +22,7 @@ function riskScore(t: Transaction) {
 
 function TransactionsPage() {
   const { data: tx = [], isLoading } = useTransactions(1000);
+  console.log(tx);
   const [q, setQ] = useState("");
   const [method, setMethod] = useState<(typeof METHODS)[number]>("ALL");
   const [status, setStatus] = useState<(typeof STATUSES)[number]>("ALL");
