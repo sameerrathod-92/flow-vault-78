@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader, Panel } from "@/components/page-header";
-import { seedApiLogs } from "@/lib/demo";
+import { useApiCredentials, useTransactions } from "@/hooks/useSupabaseData";
 import { Copy, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/api")({ component: ApiPage });
