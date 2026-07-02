@@ -24,7 +24,9 @@ r = requests.post("https://api.nexusbank.io/v1/transactions",
 
 function ApiPage() {
   const [lang, setLang] = useState<"curl" | "node" | "python">("curl");
-  const logs = seedApiLogs();
+  const { data: logs = [] } = useTransactions();
+
+const { data: apiKeys = [] } = useApiCredentials();
   const [selected, setSelected] = useState(logs[0]);
   return (
     <div className="space-y-3">
