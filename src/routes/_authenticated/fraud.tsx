@@ -1,129 +1,110 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
-import { PageHeader, StatusPill } from "@/components/page-header";
-import { Button } from "@/components/ui/button";
-import { useFraudAlerts, useTransactions } from "@/lib/queries";
-import { dt, inr, num } from "@/lib/format";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { ShieldAlert, AlertTriangle, Repeat, Copy, XCircle, ScanSearch } from "lucide-react";
+import { PageHeader, Panel, StatusPill, MetricStrip, Metric } from "@/components/page-header";
+import { inr } from "@/lib/format";
+import { seedFraudCases, seedRiskTimeline, seedGeo, seedHeatmap } from "@/lib/demo";
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { AlertTriangle } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/fraud")({
-  component: FraudPage,
-});
+export const Route = createFileRoute("/_authenticated/fraud")({ component: Fraud });
 
-const LARGE_THRESHOLD = 25000;
-
-function FraudPage() {
-  const { data: tx = [] } = useTransactions(2000);
-  const { data: alerts = [], refetch } = useFraudAlerts();
-
-  const detected = useMemo(() => {
-    const large = tx.filter((t) => Number(t.amount) >= LARGE_THRESHOLD);
-    const failed = tx.filter((t) => t.status === "FAILED");
-    const byCustomer = new Map<string, typeof tx>();
-    tx.forEach((t) => {
-      const k = t.customer_id ?? t.customer_name ?? "";
-      if (!k) return;
-      byCustomer.set(k, [...(byCustomer.get(k) ?? []), t]);
-    });
-    const multiple: typeof tx = [];
-    byCustomer.forEach((arr) => {
-      const within5min = arr
-        .slice()
-        .sort((a, b) => new Date(a.occurred_at).getTime() - new Date(b.occurred_at).getTime());
-      for (let i = 1; i < within5min.length; i++) {
-        if (new Date(within5min[i].occurred_at).getTime() - new Date(within5min[i - 1].occurred_at).getTime() < 5 * 60 * 1000) {
-          multiple.push(within5min[i]);
-        }
-      }
-    });
-    const seen = new Map<string, number>();
-    const duplicates: typeof tx = [];
-    tx.forEach((t) => {
-      const k = `${t.customer_id ?? t.customer_name}-${t.amount}-${t.merchant_id}`;
-      seen.set(k, (seen.get(k) ?? 0) + 1);
-      if ((seen.get(k) ?? 0) > 1) duplicates.push(t);
-    });
-    return { large, failed, multiple, duplicates };
-  }, [tx]);
-
-  const runScan = async () => {
-    const inserts: any[] = [];
-    detected.large.forEach((t) => inserts.push({ transaction_id: t.id, alert_type: "large_transaction", severity: "high", description: `Amount ${inr(Number(t.amount))} above threshold` }));
-    detected.failed.forEach((t) => inserts.push({ transaction_id: t.id, alert_type: "failed_transaction", severity: "low", description: "Payment failed" }));
-    detected.multiple.forEach((t) => inserts.push({ transaction_id: t.id, alert_type: "rapid_multiple", severity: "medium", description: "Multiple rapid payments by same customer" }));
-    detected.duplicates.forEach((t) => inserts.push({ transaction_id: t.id, alert_type: "duplicate_transaction", severity: "medium", description: "Possible duplicate transaction" }));
-    if (!inserts.length) return toast.info("No new alerts");
-    const { error } = await supabase.from("fraud_alerts").insert(inserts);
-    if (error) return toast.error(error.message);
-    toast.success(`${inserts.length} alerts logged`);
-    refetch();
-  };
-
+function Fraud() {
+  const cases = seedFraudCases(18);
+  const timeline = seedRiskTimeline();
+  const geo = seedGeo();
+  const heatmap = seedHeatmap();
+  const highRisk = cases.filter((c) => c.score >= 80).length;
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Fraud Detection"
-        subtitle="Realtime anomaly scanning across the transaction stream"
-        actions={
-          <Button onClick={runScan} className="gap-2" style={{ background: "var(--gradient-primary)", color: "var(--primary-foreground)" }}>
-            <ScanSearch className="h-4 w-4" /> Run Fraud Scan
-          </Button>
-        }
-      />
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Tile icon={AlertTriangle} label="Large Transactions" value={num(detected.large.length)} tone="warning" />
-        <Tile icon={Repeat} label="Rapid Multiple Payments" value={num(detected.multiple.length)} tone="warning" />
-        <Tile icon={XCircle} label="Failed Transactions" value={num(detected.failed.length)} tone="destructive" />
-        <Tile icon={Copy} label="Duplicate Transactions" value={num(detected.duplicates.length)} tone="accent" />
+    <div className="space-y-3">
+      <PageHeader eyebrow="Security Operations" title="Risk & Fraud" subtitle="Real-time monitoring across all merchant checkouts." />
+      <MetricStrip cols={4}>
+        <Metric label="Composite risk" value="42" hint="Elevated" accent="warning" trend={-3.2} />
+        <Metric label="Threat level" value="AMBER" accent="warning" hint="2h rolling window" />
+        <Metric label="High risk txns" value={String(highRisk)} accent="destructive" trend={18.6} />
+        <Metric label="ML confidence" value="94.2%" accent="success" hint="v2.4 calibrated" />
+      </MetricStrip>
+      <div className="grid gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) 340px" }}>
+        <Panel title="Risk timeline · 24h" eyebrow="Signal">
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={timeline}>
+              <defs><linearGradient id="rr" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--color-destructive)" stopOpacity={0.3} /><stop offset="100%" stopColor="var(--color-destructive)" stopOpacity={0} /></linearGradient></defs>
+              <XAxis dataKey="t" stroke="var(--color-muted-foreground)" fontSize={10} tickLine={false} axisLine={false} interval={5} />
+              <YAxis stroke="var(--color-muted-foreground)" fontSize={10} tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 6, fontSize: 11 }} />
+              <Area dataKey="score" stroke="var(--color-destructive)" fill="url(#rr)" strokeWidth={1.5} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Panel>
+        <Panel title="Geo activity" eyebrow="Origin" dense>
+          <div className="scrollbar-thin max-h-[220px] overflow-y-auto p-1">
+            {geo.map((g) => (
+              <div key={g.city} className="flex items-center gap-2 border-b border-border px-2 py-1.5 text-[12px]">
+                <span className="flex-1 truncate">{g.city}</span>
+                <span className="tabular text-muted-foreground">{g.tx.toLocaleString()}</span>
+                <span className={`tabular text-[11px] font-semibold ${g.risk > 20 ? "text-[color:var(--color-destructive)]" : g.risk > 10 ? "text-[color:var(--color-warning)]" : "text-[color:var(--color-success)]"}`}>{g.risk}</span>
+              </div>
+            ))}
+          </div>
+        </Panel>
       </div>
-
-      <div className="rounded-2xl border border-border/50 p-5 glass shadow-elegant">
-        <h3 className="mb-3 font-display text-lg font-semibold">Suspicious Activity Alerts</h3>
-        <div className="overflow-hidden rounded-xl border border-border/50">
-          <table className="w-full text-sm">
-            <thead className="bg-secondary/40 text-left text-[11px] uppercase text-muted-foreground">
-              <tr>
-                <th className="px-3 py-2">Type</th>
-                <th className="px-3 py-2">Severity</th>
-                <th className="px-3 py-2">Transaction</th>
-                <th className="px-3 py-2 text-right">Amount</th>
-                <th className="px-3 py-2">Description</th>
-                <th className="px-3 py-2">When</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/40">
-              {alerts.map((a: any) => (
-                <tr key={a.id}>
-                  <td className="px-3 py-2 font-medium">{a.alert_type.replace(/_/g, " ")}</td>
-                  <td className="px-3 py-2"><StatusPill status={a.severity === "high" ? "failed" : a.severity === "medium" ? "pending" : "muted"} /></td>
-                  <td className="px-3 py-2 font-mono text-xs">{a.transaction?.transaction_id ?? "—"}</td>
-                  <td className="px-3 py-2 text-right font-mono">{a.transaction ? inr(Number(a.transaction.amount)) : "—"}</td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">{a.description}</td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">{dt(a.created_at)}</td>
+      <Panel title="7 x 24 heatmap" eyebrow="Velocity" dense>
+        <div className="grid gap-0.5 p-2" style={{ gridTemplateColumns: "40px repeat(24, minmax(0,1fr))" }}>
+          <div />{Array.from({ length: 24 }).map((_, h) => <div key={h} className="mono text-center text-[9px] text-muted-foreground">{String(h).padStart(2, "0")}</div>)}
+          {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d) => (
+            <div key={d} className="contents">
+              <div className="mono text-[10px] text-muted-foreground">{d}</div>
+              {heatmap.filter((c) => c.day === d).map((c) => {
+                const alpha = Math.min(1, c.value / 100);
+                return <div key={d + c.hour} className="h-4 rounded-sm" style={{ background: `color-mix(in oklab, var(--color-primary) ${alpha * 90}%, transparent)` }} title={`${d} ${c.hour}:00 · ${c.value}`} />;
+              })}
+            </div>
+          ))}
+        </div>
+      </Panel>
+      <div className="grid gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) 380px" }}>
+        <Panel title="Investigation queue" eyebrow="Analyst" action={<span className="chip">{cases.length} open</span>} dense>
+          <div className="scrollbar-thin -m-2 max-h-[420px] overflow-y-auto">
+            <table className="w-full text-[12px]">
+              <thead className="sticky top-0 bg-panel text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border">
+                  <th className="px-3 py-1.5 text-left">Case</th><th className="px-3 py-1.5 text-left">Type</th>
+                  <th className="px-3 py-1.5 text-right">Score</th><th className="px-3 py-1.5 text-right">Amount</th>
+                  <th className="px-3 py-1.5 text-left">Merchant</th><th className="px-3 py-1.5 text-left">Status</th>
                 </tr>
+              </thead>
+              <tbody>
+                {cases.map((c) => (
+                  <tr key={c.id} className="border-b border-border/60 row-hover">
+                    <td className="mono px-3 py-1.5">{c.id}</td>
+                    <td className="px-3 py-1.5"><span className="flex items-center gap-1.5"><AlertTriangle className="h-3 w-3 text-[color:var(--color-warning)]" />{c.kind}</span></td>
+                    <td className={`tabular px-3 py-1.5 text-right font-semibold ${c.score >= 80 ? "text-[color:var(--color-destructive)]" : "text-[color:var(--color-warning)]"}`}>{c.score}</td>
+                    <td className="tabular px-3 py-1.5 text-right">{inr(c.amount)}</td>
+                    <td className="px-3 py-1.5">{c.merchant}</td>
+                    <td className="px-3 py-1.5"><StatusPill status={c.status} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+        <div className="space-y-3">
+          <Panel title="Device fingerprints" eyebrow="Devices" dense>
+            <div className="p-2 text-[11px]">
+              {["Chrome 124 / macOS","Safari 17 / iOS","Android 14 / Chrome","Edge 124 / Win 11"].map((d, i) => (
+                <div key={d} className="flex items-center justify-between border-b border-border py-1"><span>{d}</span><span className="tabular text-muted-foreground">{[412, 268, 194, 87][i]}</span></div>
               ))}
-              {!alerts.length && <tr><td colSpan={6} className="px-3 py-12 text-center text-muted-foreground"><ShieldAlert className="mx-auto mb-2 h-6 w-6" />No alerts logged. Run a scan to detect anomalies.</td></tr>}
-            </tbody>
-          </table>
+            </div>
+          </Panel>
+          <Panel title="IP intelligence" eyebrow="Network" dense>
+            <div className="p-2 text-[11px]">
+              {[{ip:"103.24.88.14",loc:"Mumbai IN",risk:82},{ip:"49.207.55.4",loc:"Bengaluru IN",risk:14},{ip:"185.220.101.6",loc:"TOR exit",risk:98}].map((r) => (
+                <div key={r.ip} className="flex items-center justify-between border-b border-border py-1">
+                  <div><div className="mono">{r.ip}</div><div className="text-[10px] text-muted-foreground">{r.loc}</div></div>
+                  <span className={`tabular font-semibold ${r.risk > 70 ? "text-[color:var(--color-destructive)]" : "text-[color:var(--color-success)]"}`}>{r.risk}</span>
+                </div>
+              ))}
+            </div>
+          </Panel>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Tile({ icon: Icon, label, value, tone }: { icon: any; label: string; value: string; tone: "warning" | "destructive" | "accent" }) {
-  const color = tone === "destructive" ? "text-rose-400" : tone === "accent" ? "text-cyan-400" : "text-amber-400";
-  return (
-    <div className="rounded-2xl border border-border/50 p-5 glass shadow-elegant">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
-          <div className={`mt-2 font-display text-3xl font-semibold ${color}`}>{value}</div>
-        </div>
-        <Icon className={`h-6 w-6 ${color}`} />
       </div>
     </div>
   );
