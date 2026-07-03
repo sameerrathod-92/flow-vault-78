@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { PageHeader, Panel } from "@/components/page-header";
-import { useApiCredentials, useTransactions } from "@/hooks/useSupabaseData";
+import { useApiCredentials, useTransactions, type Transaction } from "@/lib/queries";
 import { Copy, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/api")({ component: ApiPage });
@@ -27,7 +27,7 @@ function ApiPage() {
   const { data: logs = [] } = useTransactions();
 
   const { data: apiKeys = [] } = useApiCredentials();
-  const [selected, setSelected] = useState<any>(null);
+  const [selected, setSelected] = useState<Transaction | null>(null);
 
   useEffect(() => {
     if (logs.length > 0 && !selected) {
@@ -77,13 +77,17 @@ function ApiPage() {
         <div className="space-y-3">
           <Panel title="Live request log" eyebrow="Stream" dense>
             <div className="scrollbar-thin -m-2 max-h-[380px] overflow-y-auto text-[11px]">
-              {logs.map((l) => (
-                <button key={l.id} onClick={() => setSelected(l)} className={`flex w-full items-center gap-2 border-b border-border px-3 py-1.5 text-left ${selected?.id === l.id ? "bg-accent" : "row-hover"}`}>
-                  <span className={`mono w-8 text-right font-semibold ${l.status >= 500 ? "text-[color:var(--color-destructive)]" : l.status >= 400 ? "text-[color:var(--color-warning)]" : "text-[color:var(--color-success)]"}`}>{l.status}</span>
-                  <span className="mono flex-1 truncate">{l.path}</span>
-                  <span className="tabular text-muted-foreground">{l.latency_ms}ms</span>
-                </button>
-              ))}
+              {logs.map((l) => {
+                const ok = l.status === "SUCCESS";
+                const warn = l.status === "PENDING";
+                return (
+                  <button key={l.id} onClick={() => setSelected(l)} className={`flex w-full items-center gap-2 border-b border-border px-3 py-1.5 text-left ${selected?.id === l.id ? "bg-accent" : "row-hover"}`}>
+                    <span className={`mono w-16 text-right font-semibold ${!ok && !warn ? "text-[color:var(--color-destructive)]" : warn ? "text-[color:var(--color-warning)]" : "text-[color:var(--color-success)]"}`}>{l.status}</span>
+                    <span className="mono flex-1 truncate">{l.transaction_id}</span>
+                    <span className="tabular text-muted-foreground">{l.payment_method}</span>
+                  </button>
+                );
+              })}
             </div>
           </Panel>
           <Panel title="Latency" eyebrow="p50 / p95 / p99" dense>
@@ -94,7 +98,7 @@ function ApiPage() {
             </div>
           </Panel>
           {selected && (
-            <Panel title="Response payload" eyebrow={selected.path} dense>
+            <Panel title="Response payload" eyebrow={selected.transaction_id} dense>
               <pre className="mono scrollbar-thin max-h-64 overflow-auto p-2 text-[10px]">{JSON.stringify(selected, null, 2)}</pre>
             </Panel>
           )}
