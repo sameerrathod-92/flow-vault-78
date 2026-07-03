@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader, Panel } from "@/components/page-header";
 import { useApiCredentials, useTransactions } from "@/hooks/useSupabaseData";
 import { Copy, Plus } from "lucide-react";
@@ -26,15 +26,15 @@ function ApiPage() {
   const [lang, setLang] = useState<"curl" | "node" | "python">("curl");
   const { data: logs = [] } = useTransactions();
 
-const { data: apiKeys = [] } = useApiCredentials();
-const [selected, setSelected] = useState<any>(null);
-  import { useEffect } from "react";
+  const { data: apiKeys = [] } = useApiCredentials();
+  const [selected, setSelected] = useState<any>(null);
 
-useEffect(() => {
-  if (logs.length > 0 && !selected) {
-    setSelected(logs[0]);
-  }
-}, [logs]);
+  useEffect(() => {
+    if (logs.length > 0 && !selected) {
+      setSelected(logs[0]);
+    }
+  }, [logs, selected]);
+  void apiKeys;
   return (
     <div className="space-y-3">
       <PageHeader eyebrow="Developer" title="API & Webhooks" subtitle="Live REST documentation, request stream, and credential vault." />
